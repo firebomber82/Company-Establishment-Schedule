@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>晨煦顧問有限公司 · 設立進度追蹤</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0E1117; --border: rgba(255,255,255,0.07);
+      --text: #CDD5E0; --muted: #8899AA; --dim: #556677;
+      --serif: 'Noto Serif TC', Georgia, serif;
+      --sans:  'Noto Sans TC', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--serif); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background: radial-gradient(ellipse at 15% 10%, rgba(201,169,110,0.07) 0%, transparent 50%),
+                  radial-gradient(ellipse at 85% 85%, rgba(91,141,184,0.07) 0%, transparent 50%);
+    }
+
+    /* ── HEADER ── */
+    #site-header {
+      position:sticky; top:0; z-index:200;
+      background: rgba(14,17,23,0.93); backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border); padding:0 48px;
+    }
+    .header-inner { display:flex; justify-content:space-between; align-items:center; padding:22px 0 16px; flex-wrap:wrap; gap:20px; }
+    .header-eyebrow { font-family:var(--sans); font-size:10px; letter-spacing:0.25em; color:#C9A96E; text-transform:uppercase; margin-bottom:6px; }
+    .header-title { font-size:24px; font-weight:700; color:#EEF1F5; letter-spacing:0.05em; }
+    .header-sub { font-family:var(--sans); font-size:11px; color:var(--dim); margin-top:4px; }
+    .header-stats { display:flex; align-items:center; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:10px 0; }
+    .stat-box { text-align:center; padding:0 22px; }
+    .stat-num { font-size:20px; font-weight:700; color:#7EB8A4; }
+    .stat-num.gold { color:#C9A96E; }
+    .stat-label { font-family:var(--sans); font-size:10px; color:var(--dim); margin-top:2px; }
+    .stat-div { width:1px; height:28px; background:var(--border); }
+    .progress-bar-bg { height:3px; background:rgba(255,255,255,0.05); overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,#C9A96E,#7EB8A4); transition:width 0.8s ease; }
+
+    /* ── MAIN ── */
+    main { position:relative; z-index:1; padding:36px 48px 80px; max-width:1280px; margin:0 auto; }
+    .section-eyebrow { font-family:var(--sans); font-size:9px; letter-spacing:0.25em; color:#3D4D5C; text-transform:uppercase; margin-bottom:16px; }
+
+    /* ── TIMELINE SECTION ── */
+    #timeline-section { margin-bottom:44px; background:rgba(255,255,255,0.015); border:1px solid var(--border); border-radius:16px; padding:28px 32px 24px; }
+    .phase-track { display:flex; align-items:flex-start; justify-content:space-between; position:relative; margin-bottom:22px; padding:0 8px; }
+    .phase-track-line { position:absolute; top:32px; left:28px; right:28px; height:1px; background:linear-gradient(90deg,rgba(201,169,110,0.3),rgba(91,141,184,0.3)); }
+    .phase-node { display:flex; flex-direction:column; align-items:center; gap:6px; z-index:1; min-width:72px; cursor:pointer; transition:transform 0.2s; position:relative; }
+    .phase-node:hover { transform:translateY(-2px); }
+
+    /* Larger circle to fit date */
+    .phase-circle {
+      width:64px; height:64px; border-radius:50%; border:2px solid;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      transition:all 0.3s ease; background:rgba(20,22,28,0.8); position:relative;
+    }
+    .phase-circle.is-active { transform:scale(1.08); }
+    .phase-circle-inner { display:flex; flex-direction:column; align-items:center; line-height:1.2; pointer-events:none; }
+    .phase-date-big { font-family:var(--sans); font-size:12px; font-weight:700; }
+    .phase-date-year { font-family:var(--sans); font-size:9px; opacity:0.55; }
+    .phase-check { font-size:18px; font-weight:700; color:#fff; }
+
+    /* Pencil edit button */
+    .phase-edit-btn {
+      position:absolute; bottom:-3px; right:-3px;
+      width:20px; height:20px; border-radius:50%;
+      background:#151C2B; border:1px solid rgba(255,255,255,0.18);
+      display:flex; align-items:center; justify-content:center;
+      font-size:10px; cursor:pointer; color:var(--muted); transition:all 0.15s; z-index:5;
+    }
+    .phase-edit-btn:hover { background:#243050; color:#EEF1F5; border-color:rgba(255,255,255,0.4); }
+
+    /* Date edit popup */
+    .date-popup {
+      position:absolute; top:72px; left:50%; transform:translateX(-50%);
+      background:#141A28; border:1px solid rgba(255,255,255,0.16);
+      border-radius:10px; padding:12px 14px; z-index:50; width:180px;
+      display:none; flex-direction:column; gap:8px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.6);
+    }
+    .date-popup.open { display:flex; }
+    .date-popup label { font-family:var(--sans); font-size:10px; color:var(--muted); letter-spacing:0.05em; }
+    .date-popup input[type=date] {
+      background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15);
+      border-radius:5px; color:#CDD5E0; font-family:var(--sans); font-size:12px;
+      padding:5px 8px; outline:none; width:100%; cursor:pointer;
+    }
+    .date-popup input[type=date]:focus { border-color:rgba(255,255,255,0.35); }
+    .popup-note { font-family:var(--sans); font-size:10px; color:#556; line-height:1.4; }
+    .popup-confirm {
+      background:rgba(126,184,164,0.18); border:1px solid rgba(126,184,164,0.4); color:#7EB8A4;
+      border-radius:5px; padding:5px 0; font-family:var(--sans); font-size:11px; cursor:pointer; transition:all 0.15s;
+    }
+    .popup-confirm:hover { background:rgba(126,184,164,0.3); }
+
+    .phase-short { font-family:var(--sans); font-size:11px; color:var(--muted); text-align:center; }
+    .phase-short.active { font-weight:700; }
+    .phase-mini-bar { width:44px; height:3px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; }
+    .phase-mini-fill { height:100%; border-radius:2px; transition:width 0.5s ease; }
+
+    /* Gantt chips */
+    .gantt-row { display:flex; gap:6px; flex-wrap:wrap; }
+    .gantt-chip { padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); text-align:center; min-width:70px; cursor:pointer; transition:all 0.2s; background:rgba(255,255,255,0.02); }
+    .gantt-chip:hover { border-color:rgba(255,255,255,0.2); }
+    .chip-date { font-family:var(--sans); font-size:10px; font-weight:600; letter-spacing:0.03em; }
+    .chip-phase { font-family:var(--sans); font-size:10px; color:var(--dim); margin-top:2px; }
+    .chip-dot { width:5px; height:5px; border-radius:50%; margin:4px auto 0; }
+
+    /* ── FILTER BADGE ── */
+    #filter-badge { display:none; align-items:center; gap:12px; padding:10px 16px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; margin-bottom:20px; font-family:var(--sans); font-size:12px; }
+    #filter-badge.visible { display:flex; }
+    #filter-clear { background:none; border:1px solid rgba(255,255,255,0.12); color:var(--muted); border-radius:4px; padding:2px 10px; font-size:11px; cursor:pointer; font-family:var(--sans); }
+    #filter-clear:hover { border-color:rgba(255,255,255,0.25); }
+
+    /* ── MEMO ROW (collapsed) ── */
+    #memo-list { display:flex; flex-direction:column; gap:8px; }
+    .date-row { border:1px solid var(--border); border-radius:10px; background:rgba(255,255,255,0.015); overflow:hidden; transition:border-color 0.2s; }
+    .date-row:hover { border-color:rgba(255,255,255,0.12); }
+    .date-row-hdr { display:flex; justify-content:space-between; align-items:center; padding:13px 18px; border-left:3px solid transparent; cursor:pointer; transition:background 0.15s; user-select:none; }
+    .date-row-hdr:hover { background:rgba(255,255,255,0.03); }
+    .dhl { display:flex; align-items:center; gap:12px; }
+    .date-badge { padding:3px 10px; border-radius:6px; font-family:var(--sans); font-size:12px; letter-spacing:0.05em; font-weight:600; }
+    .date-phase-tag { font-family:var(--sans); font-size:11px; color:var(--dim); }
+    .dhr { display:flex; align-items:center; gap:8px; }
+    .date-task-count { font-family:var(--sans); font-size:11px; color:var(--dim); }
+    .status-pill { padding:2px 9px; border-radius:4px; font-family:var(--sans); font-size:10px; letter-spacing:0.05em; border:1px solid; }
+    .expand-hint { font-family:var(--sans); font-size:10px; color:#2D3D4A; letter-spacing:0.04em; }
+
+    /* ── HALF-SCREEN MODAL ── */
+    #modal-backdrop { display:none; position:fixed; inset:0; z-index:300; background:rgba(6,8,14,0.72); backdrop-filter:blur(8px); }
+    #modal-backdrop.open { display:block; animation:fadeIn 0.2s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    #modal-panel {
+      position:fixed; bottom:0; left:0; right:0;
+      height:50vh; min-height:480px;
+      background:#0D1320; border-top:1px solid rgba(255,255,255,0.14);
+      border-radius:20px 20px 0 0; z-index:301;
+      display:none; flex-direction:column; overflow:hidden;
+      box-shadow:0 -20px 60px rgba(0,0,0,0.7);
+    }
+    #modal-panel.open { display:flex; animation:slideUp 0.32s cubic-bezier(0.34,1.1,0.64,1); }
+    #modal-panel::before { content:''; display:block; width:44px; height:4px; border-radius:2px; background:rgba(255,255,255,0.15); margin:12px auto 0; flex-shrink:0; }
+
+    #modal-hdr { display:flex; justify-content:space-between; align-items:center; padding:10px 32px 14px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
+    #modal-hdr-left { display:flex; align-items:center; gap:12px; }
+    #modal-date-badge { padding:5px 16px; border-radius:7px; font-family:var(--sans); font-size:13px; font-weight:700; letter-spacing:0.05em; }
+    #modal-phase-lbl { font-family:var(--sans); font-size:12px; color:var(--dim); }
+    #modal-hdr-right { display:flex; align-items:center; gap:10px; }
+    #modal-stats { font-family:var(--sans); font-size:11px; color:var(--dim); }
+    #modal-close { width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.15s; }
+    #modal-close:hover { background:rgba(255,255,255,0.12); color:#EEF1F5; border-color:rgba(255,255,255,0.3); }
+
+    #modal-body { flex:1; overflow-y:auto; padding:8px 32px 28px; }
+    #modal-body::-webkit-scrollbar { width:5px; }
+    #modal-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
+    #modal-body::-webkit-scrollbar-track { background:transparent; }
+
+    .modal-two-col { display:grid; grid-template-columns:1fr 1px 1fr; height:100%; }
+    .modal-party-col { padding:18px 18px 0; overflow-y:auto; }
+    .modal-col-div { background:rgba(255,255,255,0.06); margin:18px 0 0; }
+
+    .party-hdr { display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .party-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .party-title { font-family:var(--sans); font-size:12px; font-weight:600; letter-spacing:0.08em; color:#AAB8C8; }
+    .empty-col { font-family:var(--sans); font-size:12px; color:#334455; font-style:italic; padding:8px 0; }
+
+    /* Task card */
+    .task-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:16px 18px; margin-bottom:12px; transition:border-color 0.2s; }
+    .task-card:hover { border-color:rgba(255,255,255,0.15); }
+    .task-title-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+    .status-btn { border:1px solid; border-radius:6px; padding:5px 14px; font-size:11px; cursor:pointer; font-family:var(--sans); letter-spacing:0.05em; white-space:nowrap; flex-shrink:0; transition:all 0.2s; background:transparent; }
+    .status-btn:hover { filter:brightness(1.2); }
+    .task-title { font-size:14px; font-weight:600; color:#CDD5E0; line-height:1.5; }
+    .task-meta { font-family:var(--sans); font-size:11px; margin-bottom:14px; }
+    .meta-key { color:var(--dim); } .meta-val { color:var(--muted); }
+
+    /* Planned / Actual */
+    .pa-grid { display:grid; grid-template-columns:1fr 1fr; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); }
+    .pa-box { padding:12px 14px; border-left:2px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.22); }
+    .pa-label { font-family:var(--sans); font-size:10px; color:var(--dim); margin-bottom:8px; letter-spacing:0.06em; }
+    .pa-label.done-lbl { color:#7EB8A4; }
+    .editable-field {
+      font-family:var(--sans); font-size:13px; line-height:1.75;
+      min-height:90px; cursor:text; border-radius:6px; padding:8px 10px;
+      color:#CDD5E0; border:1px solid transparent; background:transparent;
+      transition:all 0.18s; outline:none; resize:vertical; width:100%;
+    }
+    .editable-field::placeholder { color:#3A4D5C; font-style:italic; }
+    .editable-field:focus {
+      border-color:rgba(255,255,255,0.2);
+      background:rgba(255,255,255,0.05);
+      min-height:110px;
+      box-shadow:0 0 0 3px rgba(126,184,164,0.08);
+    }
+
+    .notes-row { display:flex; align-items:flex-start; gap:6px; margin-top:10px; padding:8px 10px; background:rgba(201,169,110,0.06); border-radius:6px; border-left:2px solid rgba(201,169,110,0.3); }
+    .notes-icon { font-size:11px; flex-shrink:0; margin-top:1px; }
+    .notes-text { font-family:var(--sans); font-size:11px; color:#A89070; line-height:1.6; }
+
+    /* ── FOOTER ── */
+    footer { position:relative; z-index:1; text-align:center; padding:24px 20px; font-family:var(--sans); font-size:10px; color:#2D3D4A; letter-spacing:0.12em; border-top:1px solid rgba(255,255,255,0.04); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px) {
+      #site-header { padding:0 16px; } main { padding:24px 16px 60px; }
+      .header-inner { flex-direction:column; align-items:flex-start; }
+      .modal-two-col { grid-template-columns:1fr; }
+      .modal-col-div { display:none; }
+      .pa-grid { grid-template-columns:1fr; }
+      .phase-track { overflow-x:auto; gap:4px; justify-content:flex-start; padding-bottom:8px; }
+      .phase-track-line { display:none; }
+      #modal-panel { height:75vh; min-height:400px; }
+      #modal-body { padding:8px 16px 28px; }
+      #modal-hdr { padding:10px 16px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="site-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-eyebrow">晨煦顧問有限公司</div>
+      <h1 class="header-title">公司設立進度追蹤</h1>
+      <div class="header-sub">設立期程：2026/03/02 — 2026/04/01</div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-box"><div class="stat-num" id="stat-done">—</div><div class="stat-label">已完成項目</div></div>
+      <div class="stat-div"></div>
+      <div class="stat-box"><div class="stat-num gold" id="stat-pct">—</div><div class="stat-label">整體進度</div></div>
+      <div class="stat-div"></div>
+      <div class="stat-box"><div class="stat-num" id="stat-pending">—</div><div class="stat-label">待完成項目</div></div>
+    </div>
+  </div>
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="overall-bar" style="width:0%"></div></div>
+</header>
+
+<main>
+  <section id="timeline-section">
+    <div class="section-eyebrow">設立階段時間軸 · ✎ 點擊鉛筆可修改日期（自動同步備忘錄）· 點擊節點可篩選</div>
+    <div class="phase-track" id="phase-track"><div class="phase-track-line"></div></div>
+    <div class="gantt-row" id="gantt-row"></div>
+  </section>
+
+  <div id="filter-badge"><span id="filter-label"></span><button id="filter-clear">清除篩選 ×</button></div>
+
+  <div class="section-eyebrow">日期備忘錄 · 點擊任一列展開半螢幕詳細內容</div>
+  <div id="memo-list"></div>
+</main>
+
+<footer>晨煦顧問有限公司 · 設立進度追蹤系統 · 所有資料存於本機瀏覽器，離線可用</footer>
+
+<!-- HALF-SCREEN MODAL -->
+<div id="modal-backdrop"></div>
+<div id="modal-panel">
+  <div id="modal-hdr">
+    <div id="modal-hdr-left">
+      <div id="modal-date-badge"></div>
+      <div id="modal-phase-lbl"></div>
+    </div>
+    <div id="modal-hdr-right">
+      <div id="modal-stats"></div>
+      <button id="modal-close">✕</button>
+    </div>
+  </div>
+  <div id="modal-body"></div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   DATA
+════════════════════════════════ */
+const PHASES = [
+  {id:0,label:"前置作業",short:"前置",color:"#C9A96E"},
+  {id:1,label:"開戶階段",short:"開戶",color:"#7EB8A4"},
+  {id:2,label:"資金注入",short:"資金",color:"#E8855A"},
+  {id:3,label:"活存證明",short:"活存",color:"#9B7FB6"},
+  {id:4,label:"驗資階段",short:"驗資",color:"#5B8DB8"},
+  {id:5,label:"送件設立",short:"送件",color:"#D4855A"},
+  {id:6,label:"核准稅務",short:"核准",color:"#7EB8A4"},
+  {id:7,label:"結案",    short:"結案",color:"#C9A96E"},
+];
+
+// Representative date shown in each phase node circle (editable)
+const DEFAULT_PHASE_DATES = {0:"2026/03/02",1:"2026/03/06",2:"2026/03/13",3:"2026/03/16",4:"2026/03/17",5:"2026/03/18",6:"2026/03/25",7:"2026/04/01"};
+
+const DEFAULT_TASKS = [
+  {id:"t0a",phase:0,date:"2026/03/02",title:"確認公司名稱預查完成",        responsible:"事務所",deliverable:"名稱預查核定書",        status:"done",       notes:"",                                                  planned:"確認公司名稱預查完成",                      actual:"已完成名稱預查"},
+  {id:"t0b",phase:0,date:"2026/03/04",title:"確認公司登記地址與租約",        responsible:"負責人",deliverable:"建物謄本/租約/同意書",      status:"in-progress",notes:"需確認房東同意設立公司",                            planned:"確認公司登記地址與租約",                    actual:""},
+  {id:"t1a",phase:1,date:"2026/03/06",title:"銀行開立「籌備處」帳戶",        responsible:"負責人",deliverable:"銀行存摺影本（封面）",        status:"pending",    notes:"戶名：晨煦顧問有限公司籌備處 王信凱",               planned:"前往銀行開立公司籌備處帳戶，確認公司登記地址", actual:""},
+  {id:"t2a",phase:2,date:"2026/03/13",title:"【關鍵】匯入資本額 NT$800,000", responsible:"負責人",deliverable:"匯款單/存摺內頁影本",          status:"pending",    notes:"⚠️ 備註欄必填：王信凱（不可空白）",                  planned:"股東匯入資本額800,000，備註股東姓名",          actual:""},
+  {id:"t2b",phase:2,date:"2026/03/13",title:"刷摺並回傳照片給事務所",         responsible:"負責人",deliverable:"存摺內頁照片",                 status:"pending",    notes:"需顯示80萬入帳明細",                                planned:"刷摺拍照並傳給事務所，約定驗資時間",           actual:""},
+  {id:"t3a",phase:3,date:"2026/03/16",title:"【關鍵】存入 NT$100 現金",       responsible:"負責人",deliverable:"存摺內頁照片",                 status:"pending",    notes:"設立基準日（3/13）後隔2天，證明帳戶活絡，請務必刷摺", planned:"存入100元現金並刷摺拍照",                     actual:""},
+  {id:"t4a",phase:4,date:"2026/03/17",title:"製作並簽署驗資報告書",            responsible:"事務所",deliverable:"查核報告書",                   status:"pending",    notes:"需用印（大小章）",                                   planned:"會計師進行驗資，製作驗資報告書",               actual:""},
+  {id:"t5a",phase:5,date:"2026/03/18",title:"向台北市政府送件申請設立",        responsible:"事務所",deliverable:"送件收據",                     status:"pending",    notes:"🎯 預計設立目標日",                                  planned:"設立文件簽署完成，送件市政府審核",             actual:""},
+  {id:"t6a",phase:6,date:"2026/03/25",title:"領取市政府核准函 & 統編",         responsible:"事務所",deliverable:"核准函/公司登記事項卡",         status:"pending",    notes:"統編產生",                                          planned:"市政府核准，領取統一編號",                    actual:""},
+  {id:"t6b",phase:6,date:"2026/03/27",title:"向國稅局送件（轉檔）",            responsible:"事務所",deliverable:"國稅局公文",                   status:"pending",    notes:"",                                                  planned:"文件轉至國稅局審核",                          actual:""},
+  {id:"t6c",phase:6,date:"2026/04/01",title:"負責人至國稅局簽名報到",          responsible:"負責人",deliverable:"購票證",                       status:"pending",    notes:"需帶身分證、大小章、發票章",                         planned:"國稅局核准後，負責人至稅局報到並換取購票證",   actual:""},
+  {id:"t7a",phase:7,date:"2026/04/01",title:"銀行帳戶轉正（籌備處→公司）",     responsible:"負責人",deliverable:"正式公司存摺",                 status:"pending",    notes:"攜帶核准函、登記表、章程辦理",                       planned:"購票證換好，至銀行辦理帳戶轉正，設立流程結束", actual:""},
+];
+
+const STATUS = {
+  done:          {label:"已完成",color:"#7EB8A4",bg:"rgba(126,184,164,0.15)",icon:"✓"},
+  "in-progress": {label:"進行中",color:"#C9A96E",bg:"rgba(201,169,110,0.15)",icon:"◐"},
+  pending:       {label:"待辦",  color:"#8899AA",bg:"rgba(136,153,170,0.1)", icon:"○"},
+};
+const STATUS_ORDER = ["pending","in-progress","done"];
+
+/* ════════════════════════════════
+   STATE
+════════════════════════════════ */
+const SK = "chenxu-v3", PK = "chenxu-pd-v3";
+let tasks      = (() => { try{const s=localStorage.getItem(SK);if(s)return JSON.parse(s);}catch(e){} return DEFAULT_TASKS.map(t=>({...t})); })();
+let phaseDates = (() => { try{const s=localStorage.getItem(PK);if(s)return JSON.parse(s);}catch(e){} return {...DEFAULT_PHASE_DATES}; })();
+let activeFilter = null;
+let openPopupId  = null;
+let modalDate    = null;
+
+function save()  { try{localStorage.setItem(SK,JSON.stringify(tasks));}catch(e){} }
+function savePD(){ try{localStorage.setItem(PK,JSON.stringify(phaseDates));}catch(e){} }
+
+/* ════════════════════════════════
+   HELPERS
+════════════════════════════════ */
+const groupByDate = () => {
+  const m={};
+  tasks.forEach(t=>{ if(!m[t.date])m[t.date]=[]; m[t.date].push(t); });
+  return m;
+};
+const sortDates = m => Object.keys(m).sort();
+const dateLabel = d => {
+  const w=["日","一","二","三","四","五","六"];
+  const dt=new Date(d.replace(/\//g,"-")+"T00:00:00");
+  return `${d} (${w[dt.getDay()]})`;
+};
+const toISO   = d => d ? d.replace(/\//g,"-") : "";
+const fromISO = d => d ? d.replace(/-/g,"/")  : "";
+const phProg  = id => { const t=tasks.filter(x=>x.phase===id); return t.length?Math.round(t.filter(x=>x.status==="done").length/t.length*100):0; };
+const curPh   = () => { for(let i=PHASES.length-1;i>=0;i--){ if(tasks.filter(t=>t.phase===i).some(t=>t.status!=="pending"))return i; } return 0; };
+
+/* ════════════════════════════════
+   RENDER STATS
+════════════════════════════════ */
+function renderStats(){
+  const done=tasks.filter(t=>t.status==="done").length, pct=Math.round(done/tasks.length*100);
+  document.getElementById("stat-done").textContent=done;
+  document.getElementById("stat-pct").textContent=pct+"%";
+  document.getElementById("stat-pending").textContent=tasks.length-done;
+  document.getElementById("overall-bar").style.width=pct+"%";
+}
+
+/* ════════════════════════════════
+   RENDER TIMELINE
+════════════════════════════════ */
+function renderTimeline(){
+  const track=document.getElementById("phase-track");
+  const line=track.querySelector(".phase-track-line");
+  track.innerHTML=""; track.appendChild(line);
+
+  const cp=curPh();
+  PHASES.forEach(ph=>{
+    const prog=phProg(ph.id), isDone=prog===100, isAct=ph.id===cp, isFilt=activeFilter===ph.id;
+    const phDate=phaseDates[ph.id]||"";
+    const parts=phDate.split("/"); // ["YYYY","MM","DD"]
+    const mmdd = parts.length===3 ? `${parts[1]}/${parts[2]}` : phDate;
+    const yyyy = parts.length===3 ? parts[0] : "";
+
+    const node=document.createElement("div"); node.className="phase-node"; node.dataset.ph=ph.id;
+
+    /* ─ Circle ─ */
+    const circ=document.createElement("div");
+    circ.className="phase-circle"+(isDone?" done":isAct?" is-active":"");
+    circ.style.borderColor=ph.color;
+    if(isDone){ circ.style.background=ph.color; circ.style.color="#fff"; }
+    else if(isAct){ circ.style.background=ph.color+"33"; circ.style.color=ph.color; }
+    else { circ.style.color=ph.color; }
+    if(isAct||isFilt) circ.style.boxShadow=`0 0 0 3px ${ph.color}55, 0 0 22px ${ph.color}33`;
+
+    if(isDone){
+      circ.innerHTML=`<span class="phase-check">✓</span>`;
+    } else {
+      const inner=document.createElement("div"); inner.className="phase-circle-inner";
+      inner.innerHTML=`<span class="phase-date-big" style="color:${ph.color}">${mmdd}</span><span class="phase-date-year" style="color:${ph.color}">${yyyy}</span>`;
+      circ.appendChild(inner);
+    }
+
+    /* ─ Pencil edit button ─ */
+    const editBtn=document.createElement("button"); editBtn.className="phase-edit-btn"; editBtn.innerHTML="✎"; editBtn.title="修改日期";
+    editBtn.addEventListener("click", e=>{ e.stopPropagation(); togglePopup("pp"+ph.id); });
+    circ.appendChild(editBtn);
+
+    /* ─ Popup ─ */
+    const popup=document.createElement("div"); popup.className="date-popup"; popup.id="pp"+ph.id;
+    popup.innerHTML=`
+      <label>修改此階段日期</label>
+      <input type="date" id="di${ph.id}" value="${toISO(phDate)}" />
+      <div class="popup-note">修改後，此階段所有任務日期將自動同步更新</div>
+      <button class="popup-confirm">確認修改 ✓</button>
+    `;
+    popup.querySelector(".popup-confirm").addEventListener("click", e=>{
+      e.stopPropagation();
+      const val=popup.querySelector("input").value;
+      if(!val) return;
+      const newDate=fromISO(val);
+      phaseDates[ph.id]=newDate; savePD();
+      // sync all tasks in this phase
+      tasks.filter(t=>t.phase===ph.id).forEach(t=>t.date=newDate); save();
+      closeAllPopups();
+      renderAll();
+    });
+    popup.addEventListener("click", e=>e.stopPropagation());
+    circ.appendChild(popup);
+
+    /* ─ Label + mini bar ─ */
+    const lbl=document.createElement("div"); lbl.className="phase-short"+(isAct?" active":""); lbl.style.color=isAct||isFilt?ph.color:"#8899AA"; lbl.textContent=ph.short;
+    const mb=document.createElement("div"); mb.className="phase-mini-bar";
+    const mf=document.createElement("div"); mf.className="phase-mini-fill"; mf.style.background=ph.color; mf.style.width=prog+"%";
+    mb.appendChild(mf);
+
+    node.appendChild(circ); node.appendChild(lbl); node.appendChild(mb);
+    node.addEventListener("click",()=>{ activeFilter=activeFilter===ph.id?null:ph.id; closeAllPopups(); renderFilterBadge(); renderMemoList(); renderTimeline(); });
+    track.appendChild(node);
+  });
+}
+
+function togglePopup(id){ if(openPopupId===id){closeAllPopups();}else{closeAllPopups();openPopupId=id;document.getElementById(id)&&document.getElementById(id).classList.add("open");} }
+function closeAllPopups(){ document.querySelectorAll(".date-popup.open").forEach(p=>p.classList.remove("open")); openPopupId=null; }
+document.addEventListener("click",closeAllPopups);
+
+/* ════════════════════════════════
+   RENDER GANTT CHIPS
+════════════════════════════════ */
+function renderGantt(){
+  const row=document.getElementById("gantt-row"); row.innerHTML="";
+  const m=groupByDate();
+  sortDates(m).forEach(date=>{
+    const dt=m[date], ph=PHASES[dt[0].phase];
+    const allDone=dt.every(t=>t.status==="done"), anyAct=dt.some(t=>t.status==="in-progress");
+    const chip=document.createElement("div"); chip.className="gantt-chip";
+    chip.style.borderColor=anyAct?ph.color:allDone?ph.color+"66":"rgba(255,255,255,0.08)";
+    chip.style.background=anyAct?ph.color+"18":allDone?ph.color+"08":"rgba(255,255,255,0.02)";
+    const mm=date.slice(5);
+    chip.innerHTML=`<div class="chip-date" style="color:${anyAct?ph.color:allDone?ph.color+"AA":"#8899AA"}">${mm}</div><div class="chip-phase" style="color:${anyAct?"#EEE":allDone?ph.color+"AA":"#667788"}">${ph.short}</div>${(allDone||anyAct)?`<div class="chip-dot" style="background:${ph.color}"></div>`:""}`;
+    chip.addEventListener("click",()=>openModal(date));
+    row.appendChild(chip);
+  });
+}
+
+/* ════════════════════════════════
+   RENDER FILTER BADGE
+════════════════════════════════ */
+function renderFilterBadge(){
+  const b=document.getElementById("filter-badge"), l=document.getElementById("filter-label");
+  if(activeFilter!==null){ const ph=PHASES[activeFilter]; l.innerHTML=`<span style="color:${ph.color}">篩選中：${ph.label}</span>`; b.classList.add("visible"); }
+  else b.classList.remove("visible");
+}
+
+/* ════════════════════════════════
+   RENDER MEMO LIST
+════════════════════════════════ */
+function renderMemoList(){
+  const list=document.getElementById("memo-list"); list.innerHTML="";
+  const m=groupByDate();
+  sortDates(m).filter(d=>activeFilter===null||m[d].some(t=>t.phase===activeFilter)).forEach(date=>{
+    const dt=m[date].filter(t=>activeFilter===null||t.phase===activeFilter);
+    const ph=PHASES[dt[0].phase];
+    const allDone=dt.every(t=>t.status==="done"), anyAct=dt.some(t=>t.status==="in-progress");
+    const doneCnt=dt.filter(t=>t.status==="done").length;
+
+    let pill="";
+    if(anyAct)  pill=`<div class="status-pill" style="color:#C9A96E;background:rgba(201,169,110,0.15);border-color:rgba(201,169,110,0.4)">進行中</div>`;
+    if(allDone) pill=`<div class="status-pill" style="color:#7EB8A4;background:rgba(126,184,164,0.15);border-color:rgba(126,184,164,0.4)">已完成</div>`;
+
+    const row=document.createElement("div"); row.className="date-row"; row.dataset.date=date;
+    row.innerHTML=`<div class="date-row-hdr" style="border-left-color:${ph.color}"><div class="dhl"><div class="date-badge" style="background:${ph.color}22;border:1px solid ${ph.color}44;color:${ph.color}">${dateLabel(date)}</div><div class="date-phase-tag">${ph.label}</div></div><div class="dhr"><div class="date-task-count">${doneCnt}/${dt.length} 完成</div>${pill}<span class="expand-hint">點擊展開 ↑</span></div></div>`;
+    row.querySelector(".date-row-hdr").addEventListener("click",()=>openModal(date));
+    list.appendChild(row);
+  });
+}
+
+/* ════════════════════════════════
+   MODAL
+════════════════════════════════ */
+function openModal(date){
+  const m=groupByDate(); const dt=m[date]||[]; if(!dt.length)return;
+  const ph=PHASES[dt[0].phase], doneCnt=dt.filter(t=>t.status==="done").length;
+  modalDate=date;
+
+  const db=document.getElementById("modal-date-badge");
+  db.textContent=dateLabel(date); db.style.background=ph.color+"22"; db.style.border=`1px solid ${ph.color}44`; db.style.color=ph.color;
+  document.getElementById("modal-phase-lbl").textContent=ph.label;
+  document.getElementById("modal-stats").textContent=`${doneCnt}/${dt.length} 完成`;
+
+  const body=document.getElementById("modal-body"); body.innerHTML="";
+  const ownerT=dt.filter(t=>t.responsible==="負責人"), firmT=dt.filter(t=>t.responsible==="事務所");
+  const grid=document.createElement("div"); grid.className="modal-two-col";
+  grid.appendChild(buildPartyCol(ownerT,"負責人（王信凱）","#E8855A"));
+  const dv=document.createElement("div"); dv.className="modal-col-div"; grid.appendChild(dv);
+  grid.appendChild(buildPartyCol(firmT,"會計師事務所","#5B8DB8"));
+  body.appendChild(grid);
+
+  document.getElementById("modal-backdrop").classList.add("open");
+  document.getElementById("modal-panel").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeModal(){
+  document.getElementById("modal-backdrop").classList.remove("open");
+  document.getElementById("modal-panel").classList.remove("open");
+  document.body.style.overflow="";
+  modalDate=null;
+}
+document.getElementById("modal-close").addEventListener("click",closeModal);
+document.getElementById("modal-backdrop").addEventListener("click",closeModal);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape")closeModal(); });
+
+/* ════════════════════════════════
+   PARTY COL + TASK CARD
+════════════════════════════════ */
+function buildPartyCol(tlist,title,dot){
+  const col=document.createElement("div"); col.className="modal-party-col";
+  col.innerHTML=`<div class="party-hdr"><div class="party-dot" style="background:${dot}"></div><div class="party-title">${title}</div></div>`;
+  if(!tlist.length){ const e=document.createElement("div"); e.className="empty-col"; e.textContent="— 本日無事項 —"; col.appendChild(e); return col; }
+  tlist.forEach(t=>col.appendChild(buildTaskCard(t)));
+  return col;
+}
+
+function buildTaskCard(task){
+  const sc=STATUS[task.status];
+  const card=document.createElement("div"); card.className="task-card";
+
+  const sb=document.createElement("button"); sb.className="status-btn";
+  sb.style.color=sc.color; sb.style.background=sc.bg; sb.style.borderColor=sc.color+"55";
+  sb.textContent=sc.icon+" "+sc.label; sb.title="點擊切換狀態";
+  sb.addEventListener("click",()=>{
+    const i=STATUS_ORDER.indexOf(task.status); task.status=STATUS_ORDER[(i+1)%STATUS_ORDER.length]; save();
+    renderStats(); renderTimeline(); renderGantt(); renderMemoList();
+    card.replaceWith(buildTaskCard(task));
+  });
+
+  const te=document.createElement("div"); te.className="task-title"; te.textContent=task.title;
+  const tr=document.createElement("div"); tr.className="task-title-row"; tr.appendChild(sb); tr.appendChild(te);
+
+  const meta=document.createElement("div"); meta.className="task-meta";
+  meta.innerHTML=`<span class="meta-key">交付文件：</span><span class="meta-val">${task.deliverable}</span>`;
+
+  const pg=document.createElement("div"); pg.className="pa-grid";
+
+  const pb1=document.createElement("div"); pb1.className="pa-box";
+  const pl1=document.createElement("div"); pl1.className="pa-label"; pl1.textContent="📋 預計完成事項";
+  const f1=document.createElement("textarea"); f1.className="editable-field"; f1.rows=3; f1.placeholder="填寫預計完成事項..."; f1.value=task.planned;
+  f1.addEventListener("input",()=>{ task.planned=f1.value; save(); });
+  pb1.appendChild(pl1); pb1.appendChild(f1);
+
+  const pb2=document.createElement("div"); pb2.className="pa-box"; pb2.style.borderLeftColor=task.status==="done"?"#7EB8A444":"rgba(255,255,255,0.06)";
+  const pl2=document.createElement("div"); pl2.className="pa-label"+(task.status==="done"?" done-lbl":""); pl2.textContent="✅ 實際完成事項";
+  const f2=document.createElement("textarea"); f2.className="editable-field"; f2.rows=3; f2.placeholder="填寫實際完成情況..."; f2.value=task.actual;
+  f2.addEventListener("input",()=>{ task.actual=f2.value; save(); });
+  pb2.appendChild(pl2); pb2.appendChild(f2);
+
+  pg.appendChild(pb1); pg.appendChild(pb2);
+  card.appendChild(tr); card.appendChild(meta); card.appendChild(pg);
+
+  if(task.notes){
+    const n=document.createElement("div"); n.className="notes-row";
+    n.innerHTML=`<span class="notes-icon">📌</span><span class="notes-text">${task.notes}</span>`;
+    card.appendChild(n);
+  }
+  return card;
+}
+
+/* ════════════════════════════════
+   INIT
+════════════════════════════════ */
+function renderAll(){ renderStats(); renderTimeline(); renderGantt(); renderFilterBadge(); renderMemoList(); }
+document.getElementById("filter-clear").addEventListener("click",()=>{ activeFilter=null; renderFilterBadge(); renderMemoList(); renderTimeline(); });
+renderAll();
+</script>
+</body>
+</html>
